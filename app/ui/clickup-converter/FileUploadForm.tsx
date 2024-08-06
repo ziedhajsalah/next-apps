@@ -1,7 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import csv from "csvtojson";
-import { groupBy, keys, map, mapValues, set, uniqBy } from "lodash";
+import { groupBy, keys, map, mapValues, orderBy, set, uniqBy } from "lodash";
 import clsx from "clsx";
+import { format } from "date-fns";
 
 const FileUploadForm: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -34,29 +35,42 @@ const FileUploadForm: React.FC = () => {
   };
 
   const table = Object.keys(uniqueTasks).length && (
-    <table className={clsx("border")}>
-      <tr className={clsx("border")}>
-        <th className={clsx("border")}>Username</th>
-        <th className={clsx("border")}>Task Name</th>
-        <th className={clsx("border")}>Time Spent Text</th>
-        <th className={clsx("border")}>hours spent</th>
+    <table className={clsx("border-2")}>
+      <tr className={clsx("border-2")}>
+        <th className={clsx("border-2")}>Username</th>
+        <th className={clsx("border-2")}>Date</th>
+        <th className={clsx("border-2")}>Day</th>
+        <th className={clsx("border-2")}>Task Name</th>
+        <th className={clsx("border-2")}>Time Spent Text</th>
+        <th className={clsx("border-2")}>Hours Spent</th>
       </tr>
       {Object.keys(uniqueTasks).map((user) => {
         const tasks = uniqueTasks[user].map((task: any) => {
           return (
-            <tr className={clsx("border")}>
-              <td className={clsx("border")}>{user}</td>
-              <td className={clsx("border")}>{task["Task Name"]}</td>
-              <td className={clsx("border")}>
-                {task["User Period Time Spent Text"]}
+            <tr className={clsx("border-2")}>
+              <td className={clsx("border-2")}>{user}</td>
+              <td className={clsx("border-2")}>
+                {format(task["Start Text"], "yyyy-MM-dd")}
               </td>
-              <td className={clsx("border")}>
-                {task["User Period Time Spent"] / (1000 * 60 * 60)}
+              <td className={clsx("border-2")}>
+                {format(task["Start Text"], "eeee")}
+              </td>
+              <td className={clsx("border-2")}>{task["Task Name"]}</td>
+              <td className={clsx("border-2")}>{task["Time Tracked Text"]}</td>
+              <td className={clsx("border-2")}>
+                {task["Time Tracked"] / (1000 * 60 * 60)}
               </td>
             </tr>
           );
         });
-        return tasks;
+        return (
+          <>
+            {tasks}
+            <tr>
+              <td className={clsx("border-2")} colSpan={6}></td>
+            </tr>
+          </>
+        );
       })}
     </table>
   );
@@ -79,8 +93,9 @@ export default FileUploadForm;
 
 function mapUniqueTasks(data: any[]) {
   const groupedByUsername = groupBy(data, (i) => i["Username"]);
+  console.log(groupedByUsername);
   const uniqTasksMappedByUsername = mapValues(groupedByUsername, (i) => {
-    return uniqBy(i, (j) => j["Task Name"]);
+    return orderBy(i, (j) => j["Start"]);
   });
   return uniqTasksMappedByUsername;
 }
