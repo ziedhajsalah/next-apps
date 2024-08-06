@@ -42,7 +42,7 @@ const FileUploadForm: React.FC = () => {
         <th className={clsx("border")}>hours spent</th>
       </tr>
       {Object.keys(uniqueTasks).map((user) => {
-        const tasks = uniqueTasks[user].map((task) => {
+        const tasks = uniqueTasks[user].map((task: any) => {
           return (
             <tr className={clsx("border")}>
               <td className={clsx("border")}>{user}</td>
