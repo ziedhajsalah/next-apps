@@ -1,6 +1,16 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import csv from "csvtojson";
-import { groupBy, keys, map, mapValues, orderBy, set, uniqBy } from "lodash";
+import { json2csv } from "json-2-csv";
+import {
+  groupBy,
+  keys,
+  map,
+  mapValues,
+  orderBy,
+  set,
+  uniqBy,
+  flatten,
+} from "lodash";
 import clsx from "clsx";
 import { format } from "date-fns";
 
@@ -33,6 +43,26 @@ const FileUploadForm: React.FC = () => {
     };
     reader.readAsText(file);
   };
+
+  const transformedCsv =
+    Object.keys(uniqueTasks).length &&
+    json2csv(
+      flatten(
+        Object.keys(uniqueTasks).map((i) => {
+          const tasks = uniqueTasks[i].map((task: any) => {
+            return {
+              Username: task["Username"],
+              Date: format(task["Start Text"], "yyyy-MM-dd"),
+              Day: format(task["Start Text"], "eeee"),
+              "Task Name": task["Task Name"],
+              "Time Spent Text": task["Time Tracked Text"],
+              "Hours Spent": task["Time Tracked"] / (1000 * 60 * 60),
+            };
+          });
+          return tasks;
+        }),
+      ),
+    );
 
   const table = Object.keys(uniqueTasks).length && (
     <table className={clsx("border-2")}>
@@ -84,6 +114,11 @@ const FileUploadForm: React.FC = () => {
         <button type="submit">Format</button>
       </form>
       {message && <p>{message}</p>}
+      {transformedCsv && (
+        <div className={clsx("border-2")}>
+          <pre>{transformedCsv}</pre>
+        </div>
+      )}
       {table}
     </div>
   );
